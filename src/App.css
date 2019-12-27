@@ -1,38 +1,150 @@
-.App {
-  text-align: center;
+* {
+   text-align: center;
 }
 
 .App-logo {
-  height: 40vmin;
-  pointer-events: none;
+   height: calc(30vh + 10vw);
+   max-width: 50vh;
+   max-height: 50vh;
+   pointer-events: none;
+   margin: calc(3vmin + 5vh);
+   margin-top: 5vh;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
+   .App-logo {
+      animation: App-logo-spin infinite 20s linear;
+   }
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+   from {
+      transform: rotate(0deg);
+   }
+   to {
+      transform: rotate(360deg);
+   }
 }
+
+.Page {
+   position: relative;
+   background-color: #282c34;
+   min-height: 100vh;
+   display: flex;
+   flex-flow: column nowrap;
+   align-items: center;
+   justify-content: center;
+   font-size: calc(12px + 3vmin);
+   color: white;
+}
+
+#Author-info {
+   font-size: smaller;
+   font-style: italic;
+}
+
+.Nav-button {
+   margin: 5vmin;
+   font-size: inherit;
+   background-color: inherit;
+   border-top: 2px solid #fff;
+   border-left: 2px solid #fff;
+   border-bottom: 2px solid #999999;
+   border-right: 2px solid #999999;
+}
+
+.Nav-button:hover {
+   background-color: #444444;
+}
+
+.Nav-button:hover:disabled {
+   background-color: inherit;
+}
+
+#Footer-credits {
+   position: absolute;
+   bottom: 0.1em;
+   font-size: x-small;
+}
+
+.App-link {
+   color: aquamarine;
+   text-decoration: none;
+}
+
+#StartPage form {
+   display: flex;
+   flex-flow: column wrap;
+   align-items: baseline;
+}
+
+#StartPage form label {
+   font-size: smaller;
+   margin: 1rem 1rem 0rem;
+}
+
+#StartPage form > div {
+   display: flex;
+   align-items: baseline;
+   justify-content: space-evenly;
+}
+
+#StartPage form > button {
+   align-self: center;
+   margin-top: 2rem;
+}
+
+.Font-smaller {
+   font-size: smaller;
+}
+
+#StartPage ul,
+#QuizRes ol {
+   padding-inline-start: 1em;
+}
+
+#QuizRes li {
+   text-align: left;
+}
+
+.Align-left {
+   align-self: flex-start; /*strangely not working*/
+}
+
+.AnswerBox {
+   display: flex;
+   flex-flow: column nowrap;
+   justify-content: center;
+   align-items: flex-start;
+   align-content: space-around;
+}
+
+.AnswerBox > label {
+   margin-bottom: 0.5em;
+}
+
+.Radio-span {
+   display: flex;
+   align-items: center;
+   justify-content: space-evenly;
+}
+
+.Radio-span label {
+   margin-left: 1rem;
+}
+
+#Footer-pageNo {
+   position: absolute;
+   font-size: medium;
+   bottom: 0.5em;
+}
+
+/*
+.radio-span input:checked::after {
+   content: '';
+   display: inline-block;
+   visibility: visible;
+   border: 4px solid;
+   border-radius: 4px;
+} styling pending
+*/
