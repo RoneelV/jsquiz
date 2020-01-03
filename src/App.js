@@ -1,49 +1,90 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import logo from './quiz.svg'
 import './App.css'
 
 const mathList = [
-   /*{
-      question: '1 + 3 = ?',
-      type: 'text-box',
-      answer: '4'
-   },
-   {
-      question: 'Evaluate 4 * 3 / 6 + 2',
-      type: 'text-box',
-      answer: '4'
-   },
+   /*
    {
       question: 'Evaluate 5 % 20 / 5',
       type: 'text-box',
       answer: '1'
    },*/ //text-box implementation pending
    {
-      question: 'What do you get after subtracting 5 with 2 * floor(5 / 2)?',
+      question: <>What is the volume of the unit sphere?</>,
       type: '1-choice',
-      options: ['5 % 2', '5 / 2'],
-      answer: 0
+      options: [<>1</>, <>π</>, <>4π/3</>],
+      answer: 2,
+      answerStr: '4π/3'
    },
    {
-      question: 'Evaluate floor(104 / 5) * 5 + 104 % 5',
+      question: (
+         <>
+            Find next term in this sequence:
+            <br />
+            ..., 6, 2, 0, 0, 2, 6, 12, ??
+         </>
+      ),
       type: '1-choice',
-      options: ['100', '105', '108', '104'],
-      answer: 3
+      options: [<>20</>, <>16</>, <>30</>, <>42</>],
+      answer: 0,
+      answerStr: '20'
+   },
+   {
+      question: (
+         <>
+            Find last term > 1:
+            <br />
+            128, 192, 144, 54, ...
+         </>
+      ),
+      type: '1-choice',
+      options: [<>2</>, <>1.5</>, <>3</>, <>10.125</>],
+      answer: 3,
+      answerStr: '10.125'
+   },
+   {
+      question: (
+         <>
+            Solve for x:
+            <br />
+            3x - 2 = 2x + 3 - x
+         </>
+      ),
+      type: '1-choice',
+      options: [<>2</>, <>2.5</>, <>0</>],
+      answer: 1,
+      answerStr: '2.5'
+   },
+   {
+      question: (
+         <>
+            Is A prime number or not:
+            <br />A = 2019^4 + 4^2019
+         </>
+      ),
+      type: '1-choice',
+      options: [<>Yes</>, <>No</>, <>I don't know</>],
+      answer: 1,
+      answerStr: 'No'
    }
 ]
 
 const miscList = [
    {
-      question: 'What are "Little Man" and "Fat Boy"?',
+      question: <>What are "Little Man" and "Fat Boy"?</>,
       type: '1-choice',
-      options: ['Humans', 'Atom bombs', "I don't know"],
-      answer: 1
+      options: [<>Humans</>, <>Atom bombs</>, <>I don't know</>],
+      answer: 1,
+      answerStr: 'Atoms bombs'
    },
    {
-      question: 'What can you think of size of object with "Bonsai" adjective?',
+      question: (
+         <>What can you think of size of object with "Bonsai" adjective?</>
+      ),
       type: '1-choice',
-      options: ['Tiny', 'Normal', 'Large'],
-      answer: 0
+      options: [<>Tiny</>, <>Normal</>, <>Large</>],
+      answer: 0,
+      answerStr: 'Tiny'
    }, //n-choice implementation pending
    /*{
       question: 'Categorise squash',
@@ -51,10 +92,33 @@ const miscList = [
       options: ['Ball game', 'Team game', 'Individual game'],
       answer: [0,2]
    },*/ {
-      question: 'Who is called the father of High fantasy genre?',
+      question: <>Who is called the father of High fantasy genre?</>,
       type: '1-choice',
-      options: ['George R. R. Martin', 'J. K. Rowling', 'J. R. R. Tolkien'],
-      answer: 2
+      options: [
+         <>George R. R. Martin</>,
+         <>J. K. Rowling</>,
+         <>J. R. R. Tolkien</>
+      ],
+      answer: 2,
+      answerStr: 'J. R. R. Tolkien'
+   },
+   {
+      question: <>Who founded the GNU project?</>,
+      type: '1-choice',
+      options: [
+         <>Richard Stallman</>,
+         <>Linus Torvalds</>,
+         <>Dennis Ritchie</>
+      ],
+      answer: 0,
+      answerStr: 'Richard Stallman'
+   },
+   {
+      question: <>How many Ballon d'Ors does Messi have won?</>,
+      type: '1-choice',
+      options: [<>0</>, <>6</>, <>5</>, <>7</>],
+      answer: 1,
+      answerStr: '6'
    }
 ]
 const genreList = {
@@ -203,11 +267,19 @@ function QuizAns({ pageNo, quizObj, genre, setAnswers, setSubmitted }) {
 
 function QuizSubResult({ answer, genre, index }) {
    if (answer === -1) {
-      return <>Not attempted</>
+      return (
+         <span title={'Correct answer: ' + genreList[genre][index].answerStr}>
+            Not attempted
+         </span>
+      )
    } else if (answer === genreList[genre][index].answer) {
-      return <>Correct answer</>
+      return <span>Correct answer</span>
    } else {
-      return <>Wrong answer</>
+      return (
+         <span title={'Correct answer: ' + genreList[genre][index].answerStr}>
+            Wrong answer
+         </span>
+      )
    }
 }
 
@@ -219,6 +291,26 @@ function QuizMain({ genre }) {
    answerList.fill(-1)
    let [answers, setAnswers] = useState(answerList)
    let [submitted, setSubmitted] = useState(false)
+   let [seconds, setSeconds] = useState(0)
+   let [minutes, setMinutes] = useState(0)
+
+   useEffect(() => {
+      if (submitted) {
+         return
+      }
+      let secondsID = setInterval(() => {
+         setSeconds(sec => (sec === 59 ? 0 : sec + 1))
+      }, 1000)
+
+      let minutesID = setInterval(() => {
+         setMinutes(min => min + 1)
+      }, 60000)
+
+      return () => {
+         clearInterval(secondsID)
+         clearInterval(minutesID)
+      }
+   }, [submitted])
 
    return (
       <>
@@ -232,7 +324,7 @@ function QuizMain({ genre }) {
                genre={genre}
                setAnswers={checked =>
                   setAnswers(
-                     answers.map((answer, index) =>
+                     oldAnswers => oldAnswers.map((answer, index) =>
                         index === pageNo ? checked : answer
                      )
                   )
@@ -242,7 +334,7 @@ function QuizMain({ genre }) {
             <br />
             <span>
                <button
-                  onClick={() => setPage(pageNo - 1)}
+                  onClick={() => setPage(page => page - 1)}
                   disabled={pageNo === 0}
                   className="Sub-button"
                >
@@ -255,7 +347,7 @@ function QuizMain({ genre }) {
                   Submit
                </button>
                <button
-                  onClick={() => setPage(pageNo + 1)}
+                  onClick={() => setPage(page => page + 1)}
                   disabled={pageNo === currentList.length - 1}
                   className="Sub-button"
                >
@@ -270,7 +362,9 @@ function QuizMain({ genre }) {
                </button>
             )}
             <footer className="Font-smaller" id="Footer-pageNo">
-               Page {pageNo + 1} / {currentList.length.toString()}
+               {minutes + ':' + seconds}
+               {'  Page '}
+               {pageNo + 1}/{currentList.length.toString()}
             </footer>
          </div>
          {submitted && (
