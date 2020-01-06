@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import logo from './quiz.svg'
 import './App.css'
+import firebase from 'firebase/app'
+import 'firebase/firestore'
+
+let firebaseConfig = {
+   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+   authDomain: 'jsquiz-roneel.firebaseapp.com',
+   databaseURL: 'https://jsquiz-roneel.firebaseio.com',
+   projectId: 'jsquiz-roneel',
+   storageBucket: 'jsquiz-roneel.appspot.com',
+   messagingSenderId: process.env.REACT_APP_FIREBASE_SENDER_ID,
+   appId: '1:992362490990:web:12d9fb9455ebab70930a7f'
+}
+firebase.initializeApp(firebaseConfig)
+
+let database = firebase.firestore()
 
 const mathList = [
    /*
@@ -162,18 +177,18 @@ function HomePage() {
 }
 
 function StartPage({ states, methods }) {
-   let { name, genre, submitted } = states
-   let { setName, setGenre, setSubmitted } = methods
-   const handleSubmit = (e, setSubmitted) => {
+   let { name, genre, formSubmitted } = states
+   let { setName, setGenre, setFormSubmitted } = methods
+   const handleSubmit = (e, setFormSubmitted) => {
       e.preventDefault()
-      name.length > 0 && genre.length > 0 && setSubmitted(true)
+      name.length > 0 && genre.length > 0 && setFormSubmitted(true)
    }
    return (
       <div className="Page" id="StartPage">
          <header>Please Fill this form</header>
          <br />
          <main className="Font-smaller">
-            <form onSubmit={e => handleSubmit(e, setSubmitted)}>
+            <form onSubmit={e => handleSubmit(e, setFormSubmitted)}>
                <div>
                   <label htmlFor="#Inp-name">Name: </label>
                   <input
@@ -185,7 +200,7 @@ function StartPage({ states, methods }) {
                      value={name}
                      onChange={e => {
                         setName(e.target.value)
-                        setSubmitted(false)
+                        setFormSubmitted(false)
                      }}
                   />
                </div>
@@ -199,7 +214,7 @@ function StartPage({ states, methods }) {
                      value={genre}
                      onChange={e => {
                         setGenre(e.target.value)
-                        setSubmitted(false)
+                        setFormSubmitted(false)
                      }}
                   >
                      <option value="">--please choose an option--</option>
@@ -209,27 +224,33 @@ function StartPage({ states, methods }) {
                </div>
                <button className="Sub-button">Submit</button>
             </form>
-            <br /> <br />
-            <span className="Align-left">Notes:</span>
-            <ul>
-               <li>Submission of form is required</li>
-            </ul>
             <br />
+            <>Notes:</>
+            <ul className="Font-smaller">
+               <li>Submission of form is required to start</li>
+               <li>
+                  <ul>
+                     Scoring system:
+                     <li>Correct answer: +4 points</li>
+                     <li>Wrong answer: -1 point</li>
+                     <li>Answer not attempted: 0</li>
+                  </ul>
+               </li>
+            </ul>
          </main>
-         <button className="Nav-button" disabled={!submitted}>
-            {submitted ? (
-               <a href="#QuizMain" className="App-link">
-                  I'm Ready
-               </a>
-            ) : (
-               "I'm Ready"
-            )}
+         <button className="Nav-button">
+            <a
+               href={formSubmitted ? '#QuizMain' : '#LeaderBoardPage'}
+               className="App-link"
+            >
+               {formSubmitted ? <>I'm Ready</> : <>Leaderboard</>}
+            </a>
          </button>
       </div>
    )
 }
 
-function QuizAns({ pageNo, quizObj, genre, setAnswers, setSubmitted }) {
+function QuizAns({ pageNo, quizObj, genre, submitted, setAnswers }) {
    if (quizObj.type === '1-choice') {
       return (
          <div className="AnswerBox">
@@ -247,9 +268,9 @@ function QuizAns({ pageNo, quizObj, genre, setAnswers, setSubmitted }) {
                         genre + '-' + pageNo.toString() + '-' + index.toString()
                      }
                      onClick={() => {
-                        setSubmitted()
                         setAnswers(index)
                      }}
+                     disabled={submitted}
                   />
                   <label
                      htmlFor={
@@ -283,19 +304,39 @@ function QuizSubResult({ answer, genre, index }) {
    }
 }
 
-function QuizMain({ genre }) {
+function QuizMain({ genre, name, quizSubmitted, setQuizSubmitted }) {
    let [pageNo, setPage] = useState(0)
    let currentList = genreList[genre]
    let answerList = []
    answerList.length = currentList.length
    answerList.fill(-1)
    let [answers, setAnswers] = useState(answerList)
-   let [submitted, setSubmitted] = useState(false)
    let [seconds, setSeconds] = useState(0)
    let [minutes, setMinutes] = useState(0)
+   const scoreReducer = (acc, cur, idx) => {
+      if (cur === -1) {
+         return acc
+      } else if (cur === genreList[genre][idx].answer) {
+         return acc + 4
+      } else {
+         return acc - 1
+      }
+   }
+   let addToDB = (name, genre, score, minutes, seconds) => {
+      database
+         .collection('entries')
+         .doc(
+            name +
+               genre +
+               score.toString() +
+               minutes.toString() +
+               seconds.toString()
+         )
+         .set({ name, genre, score, minutes, seconds })
+   }
 
    useEffect(() => {
-      if (submitted) {
+      if (quizSubmitted) {
          return
       }
       let secondsID = setInterval(() => {
@@ -310,7 +351,7 @@ function QuizMain({ genre }) {
          clearInterval(secondsID)
          clearInterval(minutesID)
       }
-   }, [submitted])
+   }, [quizSubmitted])
 
    return (
       <>
@@ -322,14 +363,14 @@ function QuizMain({ genre }) {
                pageNo={pageNo}
                quizObj={currentList[pageNo]}
                genre={genre}
+               submitted={quizSubmitted}
                setAnswers={checked =>
-                  setAnswers(
-                     oldAnswers => oldAnswers.map((answer, index) =>
+                  setAnswers(oldAnswers =>
+                     oldAnswers.map((answer, index) =>
                         index === pageNo ? checked : answer
                      )
                   )
                }
-               setSubmitted={() => setSubmitted(false)}
             />
             <br />
             <span>
@@ -342,7 +383,16 @@ function QuizMain({ genre }) {
                </button>
                <button
                   className="Sub-button"
-                  onClick={() => setSubmitted(true)}
+                  onClick={() => {
+                     setQuizSubmitted(true)
+                     addToDB(
+                        name,
+                        genre,
+                        answers.reduce(scoreReducer, 0),
+                        minutes,
+                        seconds
+                     )
+                  }}
                >
                   Submit
                </button>
@@ -354,7 +404,7 @@ function QuizMain({ genre }) {
                   Next
                </button>
             </span>
-            {submitted && (
+            {quizSubmitted && (
                <button className="Nav-button">
                   <a href="#QuizRes" className="App-link Font-smaller">
                      Show me Results
@@ -363,13 +413,13 @@ function QuizMain({ genre }) {
             )}
             <footer className="Font-smaller" id="Footer-pageNo">
                {minutes + ':' + seconds}
-               {'  Page '}
+               {'  Question '}
                {pageNo + 1}/{currentList.length.toString()}
             </footer>
          </div>
-         {submitted && (
-            <div className={submitted && 'Page'} id="QuizRes">
-               <h3>Results:</h3>
+         {quizSubmitted && (
+            <div className={quizSubmitted && 'Page'} id="QuizRes">
+               <h3>Hi {name}, Here are the results:</h3>
                <ol className="Font-smaller">
                   {answers.map((answer, index) => (
                      <li key={'Res' + index.toString()}>
@@ -381,28 +431,99 @@ function QuizMain({ genre }) {
                      </li>
                   ))}
                </ol>
+               Score: {answers.reduce(scoreReducer, 0)}
+               <br />
+               Time taken: {minutes + ':' + seconds}
+               <button className="Nav-button">
+                  <a href="#LeaderBoardPage" className="App-link">
+                     Leaderboard/Retry
+                  </a>
+               </button>
             </div>
          )}
       </>
    )
 }
 
+function LeaderBoard({ quizSubmitted }) {
+   let [entriesQuery, setEntriesQery] = useState([])
+   useEffect(() => {
+      database
+         .collection('entries')
+         .orderBy('score', 'desc')
+         .orderBy('minutes', 'asc')
+         .orderBy('seconds', 'asc')
+         .limit(7)
+         .get()
+         .then(querySnapShot => {
+            setEntriesQery(querySnapShot.docs)
+         })
+      return () => {
+         setEntriesQery([])
+      }
+   }, [quizSubmitted])
+
+   return (
+      <div className="Page" id="LeaderBoardPage">
+         <h3>Leaderboard</h3>
+         <table className="Font-smaller">
+            <thead>
+               <tr>
+                  <th></th>
+                  <th>Name</th>
+                  <th>Score</th>
+                  <th>Time</th>
+               </tr>
+            </thead>
+            <tbody>
+               {entriesQuery.map((doc, index) => (
+                  <tr key={doc.id}>
+                     <td>{index + 1}</td>
+                     <td>{doc.data().name}</td>
+                     <td>{doc.data().score}</td>
+                     <td>
+                        {doc.data().minutes.toString() +
+                           ':' +
+                           doc.data().seconds.toString()}
+                     </td>
+                  </tr>
+               ))}
+            </tbody>
+         </table>
+         <button className="Nav-button">
+            <a href="#StartPage" className="App-link">
+               Go back to start page
+            </a>
+         </button>
+      </div>
+   )
+}
+
 function App() {
    let [name, setName] = useState('')
    let [genre, setGenre] = useState('')
-   let [submitted, setSubmitted] = useState(false)
+   let [formSubmitted, setFormSubmitted] = useState(false)
+   let [quizSubmitted, setQuizSubmitted] = useState(false)
    return (
       <>
          <HomePage />
          <StartPage
-            states={{ name, genre, submitted }}
+            states={{ name, genre, formSubmitted }}
             methods={{
                setName,
                setGenre,
-               setSubmitted
+               setFormSubmitted
             }}
          />
-         {submitted === true && <QuizMain genre={genre} />}
+         {formSubmitted === true && (
+            <QuizMain
+               genre={genre}
+               name={name}
+               quizSubmitted={quizSubmitted}
+               setQuizSubmitted={setQuizSubmitted}
+            />
+         )}
+         <LeaderBoard quizSubmitted={quizSubmitted} />
       </>
    )
 }

@@ -72,6 +72,12 @@
    text-decoration: none;
 }
 
+#StartPage > main {
+   display: flex;
+   flex-flow: column wrap;
+   align-items: baseline;
+}
+
 #StartPage form {
    display: flex;
    flex-flow: column wrap;
@@ -103,12 +109,9 @@
    padding-inline-start: 1em;
 }
 
-#QuizRes li {
+li,
+ul ul {
    text-align: left;
-}
-
-.Align-left {
-   align-self: flex-start; /*strangely not working*/
 }
 
 .AnswerBox {
@@ -148,3 +151,24 @@
    border-radius: 4px;
 } styling pending
 */
+
+table,
+th,
+td {
+   border: 1px solid rgb(117, 108, 108);
+   border-collapse: collapse;
+   padding-right: 2vw;
+   padding-left: 2vw;
+   text-overflow: ellipsis;
+}
+
+table {
+   table-layout: fixed;
+   box-sizing: border-box;
+   max-width: 96vw;
+   margin: 6vh auto 6vh;
+}
+
+th {
+   max-width: 40vw;
+}
