@@ -178,7 +178,7 @@ function HomePage() {
 
 function StartPage({ states, methods }) {
    let { name, genre, formSubmitted } = states
-   let { setName, setGenre, setFormSubmitted } = methods
+   let { setName, setGenre, setFormSubmitted, setQuizSubmitted } = methods
    const handleSubmit = (e, setFormSubmitted) => {
       e.preventDefault()
       name.length > 0 && genre.length > 0 && setFormSubmitted(true)
@@ -188,7 +188,15 @@ function StartPage({ states, methods }) {
          <header>Please Fill this form</header>
          <br />
          <main className="Font-smaller">
-            <form onSubmit={e => handleSubmit(e, setFormSubmitted)}>
+            <form
+               onSubmit={e => handleSubmit(e, setFormSubmitted)}
+               onReset={e => {
+                  setFormSubmitted(false)
+                  setQuizSubmitted(false)
+                  setName('')
+                  setGenre('')
+               }}
+            >
                <div>
                   <label htmlFor="#Inp-name">Name: </label>
                   <input
@@ -201,6 +209,7 @@ function StartPage({ states, methods }) {
                      onChange={e => {
                         setName(e.target.value)
                         setFormSubmitted(false)
+                        setQuizSubmitted(false)
                      }}
                   />
                </div>
@@ -215,6 +224,7 @@ function StartPage({ states, methods }) {
                      onChange={e => {
                         setGenre(e.target.value)
                         setFormSubmitted(false)
+                        setQuizSubmitted(false)
                      }}
                   >
                      <option value="">--please choose an option--</option>
@@ -222,7 +232,12 @@ function StartPage({ states, methods }) {
                      <option value="misc">Miscellaneous</option>
                   </select>
                </div>
-               <button className="Sub-button">Submit</button>
+               <span>
+                  <button className="Sub-button">Submit</button>
+                  <button type="reset" className="Sub-button">
+                     Reset
+                  </button>
+               </span>
             </form>
             <br />
             <>Notes:</>
@@ -394,7 +409,7 @@ function QuizMain({ genre, name, quizSubmitted, setQuizSubmitted }) {
                      )
                   }}
                >
-                  Submit
+                  Submit All
                </button>
                <button
                   onClick={() => setPage(page => page + 1)}
@@ -512,7 +527,8 @@ function App() {
             methods={{
                setName,
                setGenre,
-               setFormSubmitted
+               setFormSubmitted,
+               setQuizSubmitted
             }}
          />
          {formSubmitted === true && (

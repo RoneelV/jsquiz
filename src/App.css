@@ -95,7 +95,7 @@
    justify-content: space-evenly;
 }
 
-#StartPage form > button {
+#StartPage form > span {
    align-self: center;
    margin-top: 2rem;
 }
